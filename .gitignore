@@ -1,0 +1,6 @@
+# Dependencies
+node_modules/
+
+# Backup files
+*.bak
+*.bak.*
