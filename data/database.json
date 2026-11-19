@@ -1,0 +1,101 @@
+{
+  "notebooks": [
+    {
+      "id": "nb-java-notes-core-persistent-id",
+      "title": "Java Notes",
+      "description": "Continuous learning study notebook for Java programming concepts.",
+      "category": "Programming Languages",
+      "icon": "☕",
+      "file": "java.html",
+      "sections": 123
+    },
+    {
+      "id": "nb-dsa-notes-persistent-id",
+      "title": "DSA Notes",
+      "description": "Data Structures & Algorithms notebook for study and LeetCode patterns.",
+      "category": "Computer Science",
+      "icon": "🧠",
+      "file": "dsa.html",
+      "sections": 17
+    },
+    {
+      "id": "nb-c-notes-persistent-id",
+      "title": "C Language",
+      "description": "Low-level programming, memory management, pointers, and systems architecture.",
+      "category": "Programming Languages",
+      "icon": "⚡",
+      "file": "c.html",
+      "sections": 0
+    },
+    {
+      "id": "nb-cpp-notes-persistent-id",
+      "title": "C++ Language",
+      "description": "Object-oriented programming, STL algorithms, templates, and modern C++.",
+      "category": "Programming Languages",
+      "icon": "🚀",
+      "file": "cpp.html",
+      "sections": 199
+    },
+    {
+      "id": "nb-sql-notes-persistent-id",
+      "title": "SQL Notes",
+      "description": "Structured Query Language, queries, joins, window functions, and indexing.",
+      "category": "Databases",
+      "icon": "🐬",
+      "file": "sql.html",
+      "sections": 156,
+      "updatedAt": "2026-10-18T18:35:22.278Z"
+    },
+    {
+      "id": "nb-dbms-notes-persistent-id",
+      "title": "DBMS Notes",
+      "description": "Database management systems, relational modeling, ER diagrams, normalization, and transactions.",
+      "category": "Databases",
+      "icon": "🗄️",
+      "file": "dbms.html",
+      "sections": 0
+    },
+    {
+      "id": "nb-cn-notes-persistent-id",
+      "title": "Computer Networks (CN)",
+      "description": "OSI & TCP/IP models, routing protocols, subnetting, network security, and sockets.",
+      "category": "Networking",
+      "icon": "🌐",
+      "file": "cn.html",
+      "sections": 56
+    },
+    {
+      "id": "nb-js-notes-persistent-id",
+      "title": "JavaScript Notes",
+      "description": "V8 engine, execution context, closures, prototypal inheritance, async/await, DOM.",
+      "category": "Programming Languages",
+      "icon": "⚡",
+      "file": "js.html",
+      "sections": 15
+    },
+    {
+      "id": "nb-html-css-notes-persistent-id",
+      "title": "HTML & CSS",
+      "description": "The Ultimate HTML5 & CSS3 Masterclass: Semantic HTML5, CSS Cascade, Flexbox, Grid, Forms, Animations, and Commercial Website Architecture - Complete 177 in-depth lessons.",
+      "category": "Web Development",
+      "icon": "🌐",
+      "file": "html_css.html",
+      "sections": 177
+    }
+  ],
+  "cpp": {
+    "title": "C++ Language Notes",
+    "topicCount": 199,
+    "lastUpdated": "2026-10-18T18:03:02.560Z"
+  },
+  "dbms": {
+    "title": "DBMS Notes",
+    "topicCount": 0,
+    "lastUpdated": "2026-10-18T16:09:25.244Z"
+  },
+  "sql": {
+    "title": "SQL Notes",
+    "topicCount": 156,
+    "lastUpdated": "2026-10-18T16:21:02.304Z"
+  }
+}

@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Notes Hub | Study Workspace</title>
+
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       Design System - DAY MODE ONLY
+       ========================================================================== */
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-card-hover: #fafafa;
+
+      --border-subtle: #e2e8f0;
+      --border-focus: rgba(79, 70, 229, 0.5);
+
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      --accent-subtle: rgba(79, 70, 229, 0.08);
+
+      --text-main: #0f172a;
+      --text-body: #334155;
+      --text-muted: #64748b;
+      --text-faint: #94a3b8;
+
+      --success: #10b981;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+      --sidebar-width: 290px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.6;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    .app-layout {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .brand-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-gradient);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      color: white;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+
+    .brand-text h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .brand-text span {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .nav-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 8px;
+    }
+
+    .notebook-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .notebook-nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      color: var(--text-main);
+      transition: all var(--transition);
+      position: relative;
+    }
+
+    .notebook-nav-item:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .notebook-nav-item.active {
+      background: var(--accent-subtle);
+      border: 1px solid rgba(79, 70, 229, 0.3);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .notebook-nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      bottom: 6px;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-count {
+      font-size: 0.7rem;
+      background: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .notebook-nav-item.active .badge-count {
+      background: #e0e7ff;
+      color: var(--accent);
+    }
+
+    .sidebar-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot-online {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    /* Main Workspace */
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .header-bar {
+      height: 64px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+    }
+
+    .notebook-heading {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .dashboard-container {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      box-sizing: border-box;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .welcome-banner h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .welcome-banner p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 650px;
+    }
+
+    .grid-notebooks {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .notebook-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all var(--transition);
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+      position: relative;
+    }
+
+    .notebook-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      border-color: rgba(79, 70, 229, 0.4);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+
+    .card-icon.java {
+      background: #e0e7ff;
+    }
+
+    .card-icon.sql {
+      background: #e0f2fe;
+    }
+
+    .card-icon.cn {
+      background: #d1fae5;
+    }
+
+    .card-icon.dsa {
+      background: #ede9fe;
+    }
+
+    .card-icon.c {
+      background: #dbeafe;
+    }
+
+    .card-icon.cpp {
+      background: #e0f2fe;
+    }
+
+    .card-icon.dbms {
+      background: #fef3c7;
+    }
+
+    .card-icon.os {
+      background: #e0f2fe;
+    }
+
+    .card-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .card-badge.active {
+      background: #e0e7ff;
+      color: var(--accent);
+    }
+
+    .card-badge.empty {
+      background: #f1f5f9;
+      color: var(--text-muted);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .card-id {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-body);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .card-action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: all var(--transition);
+    }
+
+    .notebook-card:hover .card-action-btn {
+      background: var(--accent);
+      color: white;
+    }
+  </style>
+  <link rel="stylesheet" href="public/css/main.css">
+  <link rel="stylesheet" href="public/css/sidebar.css">
+  <link rel="stylesheet" href="public/css/responsive.css">
+</head>
+
+<body>
+
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand-header">
+        <a href="index.html" class="brand-left" title="Go to Dashboard">
+          <div class="brand-logo">📚</div>
+          <div class="brand-text">
+            <h1>Smart Notes</h1>
+            <span>Study Workspace</span>
+          </div>
+        </a>
+        <button class="pin-toggle-btn" id="pin-sidebar-btn" title="Pin / Unpin Sidebar">📌</button>
+        <button class="sidebar-close-btn" id="sidebar-close-btn" title="Close Sidebar">✕</button>
+      </div>
+
+      <div class="sidebar-content">
+        <div class="nav-label">Subject Notebooks</div>
+
+        <nav class="notebook-nav-list">
+          <a href="index.html" class="notebook-nav-item active">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">🏠</span>
+              <span class="nav-item-title">Main Dashboard</span>
+            </div>
+          </a>
+
+          <a href="java.html" class="notebook-nav-item" data-subject="java" id="nav-java">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">☕</span>
+              <span class="nav-item-title">Java Notes</span>
+            </div>
+            <span class="badge-count">123 notes</span>
+          </a>
+
+          <a href="springboot.html" class="notebook-nav-item" data-subject="springboot" id="nav-springboot">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">🌱</span>
+              <span class="nav-item-title">Spring Boot: Complete Mastery</span>
+            </div>
+            <span class="badge-count">30 notes</span>
+          </a>
+
+          <a href="dsa.html" class="notebook-nav-item" data-subject="dsa" id="nav-dsa">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">🧠</span>
+              <span class="nav-item-title">DSA Notes</span>
+            </div>
+            <span class="badge-count">17 notes</span>
+          </a>
+
+          <a href="c.html" class="notebook-nav-item" data-subject="c" id="nav-c">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">⚡</span>
+              <span class="nav-item-title">C Language</span>
+            </div>
+            <span class="badge-count">0 notes</span>
+          </a>
+
+          <a href="cpp.html" class="notebook-nav-item" data-subject="cpp" id="nav-cpp">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">🚀</span>
+              <span class="nav-item-title">C++ Language</span>
+            </div>
+            <span class="badge-count">199 notes</span>
+          </a>
+
+          <a href="sql.html" class="notebook-nav-item" data-subject="sql" id="nav-sql">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">🐬</span>
+              <span class="nav-item-title">SQL Notes</span>
+            </div>
+            <span class="badge-count">156 notes</span>
+          </a>
+
+          <a href="dbms.html" class="notebook-nav-item" data-subject="dbms" id="nav-dbms">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">🗄️</span>
+              <span class="nav-item-title">DBMS Notes</span>
+            </div>
+            <span class="badge-count">0 notes</span>
+          </a>
+
+          
+          <a href="os.html" class="notebook-nav-item" data-subject="os" id="nav-os">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">💻</span>
+              <span class="nav-item-title">OS Notes</span>
+            </div>
+            <span class="badge-count">54 notes</span>
+          </a>
+
+          <a href="cn.html" class="notebook-nav-item" data-subject="cn" id="nav-cn">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">🌐</span>
+              <span class="nav-item-title">CN Notes</span>
+            </div>
+            <span class="badge-count">56 notes</span>
+          </a>
+
+          <a href="html_css.html" class="notebook-nav-item" data-subject="html_css" id="nav-html-css">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">🌐</span>
+              <span class="nav-item-title">HTML &amp; CSS</span>
+            </div>
+            <span class="badge-count">177 notes</span>
+          </a>
+
+          <a href="js.html" class="notebook-nav-item" data-subject="js" id="nav-js">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">⚡</span>
+              <span class="nav-item-title">JavaScript Notes</span>
+            </div>
+            <span class="badge-count">15 notes</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="status-badge">
+          <span class="dot-online"></span>
+          <span class="sidebar-footer-text">Day Mode Active</span>
+        </div>
+        <span class="sidebar-footer-text" style="color: var(--accent); font-weight: 600;">v2.0</span>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop"></div>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="main-workspace">
+      <header class="header-bar">
+        <div class="header-left">
+          <button class="mobile-menu-toggle" id="mobile-menu-toggle" title="Toggle Navigation Menu"
+            aria-label="Toggle Navigation Menu">☰</button>
+          <h2 class="notebook-heading">📚 Connected Study Notebooks</h2>
+        </div>
+
+        <div class="header-center-search">
+          <div class="global-search-bar" id="global-search-bar">
+            <span class="search-icon-svg">🔍</span>
+            <input type="text" id="global-search-input" class="global-search-input"
+              placeholder="Search all notes, chapters, topics, code... (Press '/' or Ctrl+K)" autocomplete="off">
+            <div class="search-kbd-shortcut">
+              <kbd>Ctrl</kbd>
+              <kbd>K</kbd>
+            </div>
+            <button type="button" id="global-search-clear" class="search-clear-btn" style="display:none;"
+              title="Clear search">✕</button>
+          </div>
+
+          <!-- Spotlight / Live Search Dropdown -->
+          <div class="global-search-dropdown" id="global-search-dropdown" style="display: none;">
+            <div class="search-dropdown-header">
+              <span class="search-results-summary" id="search-results-summary">Quick Results</span>
+              <span class="search-hint">↑ ↓ to navigate • ↵ to jump • esc to close</span>
+            </div>
+            <div class="search-dropdown-results" id="search-dropdown-results"></div>
+            <div class="search-dropdown-footer">
+              <span>Tip: Press <kbd>Enter</kbd> to jump straight to the best match</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right-actions">
+          <a href="index.html" class="header-hub-btn" title="Refresh Dashboard">
+            <span>🏠</span>
+            <span class="hub-btn-text">Dashboard</span>
+          </a>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <div class="dashboard-container">
+
+          <div class="welcome-banner">
+            <h2>Welcome to Your Study Hub</h2>
+            <p>Har subject ke liye dedicated HTML file connected hai. Jo subject aap study karenge, uske notes directly
+              uski file ke code me append hote rahenge.</p>
+          </div>
+
+          <div class="grid-notebooks">
+
+            <!-- Java Notes Card -->
+            <div class="notebook-card" data-subject="java" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon java">☕</div>
+                  <span class="card-badge active">123 Notes Active</span>
+                </div>
+                <h3 class="card-title">Java Notes</h3>
+                <span class="card-id">Core Concepts • Methods • Clean Code • OOP</span>
+                <p class="card-desc">Chapter 1: Fundamentals • Chapter 2: Control Flow • Chapter 3: Clean Coding &amp;
+                  Methods • Chapter 4: OOP, Overloading &amp; Constructors.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="java.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Spring Boot Notes Card -->
+            <div class="notebook-card" data-subject="springboot" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon" style="background: #dcfce7;">🌱</div>
+                  <span class="card-badge active">30 Notes Active</span>
+                </div>
+                <h3 class="card-title">Spring Boot: Complete Mastery</h3>
+                <span class="card-id">Orientation • Fundamentals • Dependency Injection &amp; Bean Management</span>
+                <p class="card-desc">Course orientation, prerequisites, and comprehensive 4-module step-by-step guide: Spring Boot Basics &amp; Auto-Config, Layered Backend REST Architecture, Spring Data JPA &amp; MySQL CRUD, and Spring Security 6 with JWT, Testing, &amp; Docker Deployment.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="springboot.html" class="card-action-btn card-open-direct" style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- DSA Notes Card -->
+            <div class="notebook-card" data-subject="dsa" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon dsa">🧠</div>
+                  <span class="card-badge active">17 Notes Active</span>
+                </div>
+                <h3 class="card-title">DSA Notes</h3>
+                <span class="card-id">Data Structures &amp; Algorithms</span>
+                <p class="card-desc">Arrays, Linked Lists, Trees, Graphs, Sorting, Searching, Dynamic Programming &amp;
+                  DSA core patterns.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="dsa.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- C Language Card -->
+            <div class="notebook-card" data-subject="c" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon c">⚡</div>
+                  <span class="card-badge empty">0 Notes</span>
+                </div>
+                <h3 class="card-title">C Language</h3>
+                <span class="card-id">Pointers • Memory • Systems</span>
+                <p class="card-desc">Low-level architecture, pointer arithmetic, manual memory allocation, structs,
+                  unions, and file I/O.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="c.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- C++ Language Card -->
+            <div class="notebook-card" data-subject="cpp" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon cpp">🚀</div>
+                  <span class="card-badge active">199 Notes Active</span>
+                </div>
+                <h3 class="card-title">C++ Language</h3>
+                <span class="card-id">OOP • STL • Modern C++</span>
+                <p class="card-desc">Object-oriented programming, templates, STL containers, iterators, move semantics,
+                  and competitive programming.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="cpp.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- SQL Notes Card -->
+            <div class="notebook-card" data-subject="sql" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon sql">🐬</div>
+                  <span class="card-badge active">156 Notes Active</span>
+                </div>
+                <h3 class="card-title">SQL Notes</h3>
+                <span class="card-id">Database Querying • SQL Mastery</span>
+                <p class="card-desc">Structured Query Language, RDBMS, DDL, DML, DQL, Joins, Indexing, Window Functions,
+                  and Query Optimization.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="sql.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- DBMS Notes Card -->
+            <div class="notebook-card" data-subject="dbms" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon dbms">🗄️</div>
+                  <span class="card-badge empty">0 Notes</span>
+                </div>
+                <h3 class="card-title">DBMS Notes</h3>
+                <span class="card-id">Database Architecture &amp; Theory</span>
+                <p class="card-desc">Database Management Systems, relational modeling, ER diagrams, relational algebra,
+                  concurrency control, and transactions.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="dbms.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Operating Systems Card -->
+            <div class="notebook-card" data-subject="os" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon os">💻</div>
+                  <span class="card-badge active">54 Notes Active</span>
+                </div>
+                <h3 class="card-title">Operating Systems (OS)</h3>
+                <span class="card-id">Process Management • Memory • File Systems • Concurrency</span>
+                <p class="card-desc">Comprehensive 9-Module Masterclass: OS Architecture, System Calls, CPU Scheduling Algorithms, Process Synchronization &amp; Semaphores, Deadlocks, Paging &amp; Virtual Memory, File Systems, and Disk Scheduling.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="os.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+
+            <!-- HTML & CSS: Complete 3-Part Master Series Notes Card -->
+            <div class="notebook-card" data-subject="html_css" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon" style="background: linear-gradient(135deg, #e0f2fe 0%, #fdf2f8 100%);">🌐</div>
+                  <span class="card-badge active">177 Notes Active</span>
+                </div>
+                <h3 class="card-title">HTML &amp; CSS</h3>
+                <span class="card-id">Fundamentals • Advanced Layout &amp; Architecture • Commercial Cloud
+                  Project</span>
+                <p class="card-desc">The Complete 3-in-1 Masterclass (Mosh Hamedani): Semantic HTML5, CSS Cascade,
+                  Flexbox, CSS Grid, Typography, Forms, 3D Transforms, BEM Architecture, and Building &amp; Deploying a
+                  Commercial Cloud Website.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="html_css.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Full Series (177 Notes)</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- JavaScript Notes Card -->
+            <div class="notebook-card" data-subject="js" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon" style="background: #fef9c3;">⚡</div>
+                  <span class="card-badge active">15 Notes Active</span>
+                </div>
+                <h3 class="card-title">JavaScript Notes</h3>
+                <span class="card-id">V8 Engine • Closures • Async/Await • DOM</span>
+                <p class="card-desc">V8 JIT compilation, Execution Context, Stack vs Heap, Closures, Prototypal
+                  Inheritance, Event Loop, Promises, and High-Performance DOM.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="js.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- CN Notes Card -->
+            <div class="notebook-card" data-subject="cn" style="cursor: pointer;">
+              <div>
+                <div class="card-top">
+                  <div class="card-icon cn">🌐</div>
+                  <span class="card-badge active">56 Notes Active</span>
+                </div>
+                <h3 class="card-title">Computer Networks (CN)</h3>
+                <span class="card-id">Network Models • TCP/IP Suite</span>
+                <p class="card-desc">OSI Model, TCP/IP Suite, IP Addressing, Routing, Subnetting, DNS, HTTP, and Socket
+                  Protocols.</p>
+              </div>
+              <div style="margin-top: 16px;">
+                <a href="cn.html" class="card-action-btn card-open-direct"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Open Notes</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="public/js/outlines-data.js"></script>
+  <script src="public/js/search.js"></script>
+  <script src="public/js/sidebar.js"></script>
+  <script src="public/js/app.js"></script>
+</body>
+
+</html>

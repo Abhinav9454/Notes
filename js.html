@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Notes | Smart Notes Manager</title>
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       Design System - DAY MODE ONLY
+       ========================================================================== */
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-card-hover: #fafafa;
+      --bg-code: #ffffff;
+
+      --border-subtle: #e2e8f0;
+      --border-focus: rgba(2, 132, 199, 0.6);
+      --border-accent: rgba(2, 132, 199, 0.25);
+
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --accent-gradient: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+      --accent-subtle: rgba(2, 132, 199, 0.08);
+
+      --text-main: #0f172a;
+      --text-body: #334155;
+      --text-muted: #64748b;
+      --text-faint: #94a3b8;
+
+      --success: #10b981;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+    }
+
+    /* Force Light Theme */
+    html, body {
+      background-color: var(--bg-primary) !important;
+      color: var(--text-body) !important;
+      font-family: var(--font-sans);
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .app-layout {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+      background: var(--bg-primary);
+    }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      min-width: 0;
+      background: var(--bg-primary);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .header-bar {
+      height: 64px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .notebook-heading {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-main);
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 32px 40px;
+      overflow-y: auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* FLUID CONTAINER */
+    .notes-container {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      box-sizing: border-box;
+    }
+
+    #notebook-sections {
+      width: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 24px !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Notes Section Card */
+    .notes-section {
+      width: 100% !important;
+      max-width: 100% !important;
+      flex-shrink: 0 !important;
+      display: block !important;
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      scroll-margin-top: 90px;
+      box-sizing: border-box !important;
+    }
+
+    .notes-section:hover {
+      border-color: var(--border-focus);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.06);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .section-heading {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    .section-meta-right {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      background: var(--bg-tertiary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .section-body {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-body);
+    }
+
+    .section-body h3 {
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 24px 0 12px 0;
+    }
+
+    .section-body h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0369a1;
+      margin: 18px 0 8px 0;
+    }
+
+    .section-body p {
+      margin-bottom: 14px;
+    }
+
+    .section-body ul, .section-body ol {
+      margin: 10px 0 16px 24px;
+    }
+
+    .section-body li {
+      margin-bottom: 6px;
+    }
+
+    /* CODE BLOCK COMPONENT */
+    .code-block-container {
+      background: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin: 16px 0;
+      overflow: hidden;
+    }
+
+    .code-block-header {
+      background: #f1f5f9;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .copy-btn {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-family: var(--font-sans);
+      color: var(--text-body);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-main);
+      border-color: var(--border-focus);
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #0f172a;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0284c7;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* MODERN TABLES */
+    .notes-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 0.9rem;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .notes-table th {
+      background: #f1f5f9;
+      color: var(--text-main);
+      font-weight: 700;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .notes-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-body);
+    }
+
+    .notes-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .notes-table tr:nth-child(even) {
+      background: #fcfcfd;
+    }
+
+    /* CALLOUT */
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      margin: 18px 0;
+      font-size: 0.92rem;
+    }
+  </style>
+
+  <!-- External Stylesheets -->
+  <link rel="stylesheet" href="public/css/main.css">
+  <link rel="stylesheet" href="public/css/sidebar.css">
+  <link rel="stylesheet" href="public/css/components.css">
+  <link rel="stylesheet" href="public/css/responsive.css">
+</head>
+<body class="day-mode">
+  <div class="app-layout">
+    
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+      <div class="brand-header">
+        <div class="brand-logo" style="background: var(--accent-gradient);">
+          <span>⚡</span>
+        </div>
+        <div class="brand-text">
+          <h1>Smart Notes</h1>
+          <span>Study Workspace</span>
+        </div>
+        <button class="pin-sidebar-btn" id="pin-sidebar-btn" title="Pin / Collapse Sidebar">📌</button>
+      </div>
+
+      <div class="sidebar-content">
+        <div class="nav-label">Navigation Hub</div>
+        <div class="notebook-nav-list">
+          <a href="java.html" class="notebook-nav-item">
+            <div class="nav-item-left"><span>☕</span><span class="nav-item-title">Java Notes</span></div>
+          </a>
+          <a href="dsa.html" class="notebook-nav-item">
+            <div class="nav-item-left"><span>🧠</span><span class="nav-item-title">DSA Notes</span></div>
+          </a>
+          <a href="c.html" class="notebook-nav-item">
+            <div class="nav-item-left"><span>⚡</span><span class="nav-item-title">C Language</span></div>
+          </a>
+          <a href="cpp.html" class="notebook-nav-item">
+            <div class="nav-item-left"><span>🚀</span><span class="nav-item-title">C++ Language</span></div>
+          </a>
+          <a href="sql.html" class="notebook-nav-item">
+            <div class="nav-item-left"><span>🐬</span><span class="nav-item-title">SQL Notes</span></div>
+          </a>
+          <a href="dbms.html" class="notebook-nav-item">
+            <div class="nav-item-left"><span>🗄️</span><span class="nav-item-title">DBMS Notes</span></div>
+          </a>
+          <a href="cn.html" class="notebook-nav-item">
+            <div class="nav-item-left"><span>🌐</span><span class="nav-item-title">CN Notes</span></div>
+          </a>
+          <a href="html_css.html" class="notebook-nav-item">
+            <div class="nav-item-left"><span>🌐</span><span class="nav-item-title">HTML &amp; CSS</span></div>
+          </a>
+          <a href="js.html" class="notebook-nav-item active">
+            <div class="nav-item-left"><span>⚡</span><span class="nav-item-title">JavaScript Notes</span></div>
+          </a>
+        </div>
+
+        <div class="nav-label" style="margin-top: 16px;">Table of Contents</div>
+        <div class="toc-section" id="sidebar-toc">
+          <div class="toc-empty-notice">Loading outline...</div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="status-badge">
+          <span class="dot-online"></span>
+          <span class="sidebar-footer-text">Day Mode Active</span>
+        </div>
+        <a href="index.html" class="sidebar-footer-text" style="color: var(--accent); text-decoration: none; font-weight: 600;">← Hub</a>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop"></div>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="main-workspace">
+      <!-- Top Header Bar -->
+      <header class="header-bar">
+        <div class="header-left">
+          <button class="mobile-menu-toggle" id="mobile-menu-toggle" title="Toggle Table of Contents" aria-label="Toggle Table of Contents">☰</button>
+          <h2 class="notebook-heading">
+            <span>⚡ JavaScript Notes</span>
+          </h2>
+        </div>
+
+        <div class="header-center-search">
+          <div class="global-search-bar" id="global-search-bar">
+            <span class="search-icon-svg">🔍</span>
+            <input type="text" id="global-search-input" class="global-search-input" placeholder="Search JavaScript Notes, topics... (Press '/' or Ctrl+K)" autocomplete="off">
+            <div class="search-kbd-shortcut">
+              <kbd>Ctrl</kbd>
+              <kbd>K</kbd>
+            </div>
+            <button type="button" id="global-search-clear" class="search-clear-btn" style="display:none;" title="Clear search">✕</button>
+          </div>
+
+          <!-- Spotlight / Live Search Dropdown -->
+          <div class="global-search-dropdown" id="global-search-dropdown" style="display: none;">
+            <div class="search-dropdown-header">
+              <span class="search-results-summary" id="search-results-summary">Quick Results</span>
+              <span class="search-hint">↑ ↓ to navigate • ↵ to jump • esc to close</span>
+            </div>
+            <div class="search-dropdown-results" id="search-dropdown-results"></div>
+            <div class="search-dropdown-footer">
+              <span>Tip: Press <kbd>Enter</kbd> to jump straight to the best match</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right-actions">
+          <a href="index.html" class="header-hub-btn" title="Go to Study Hub Dashboard">
+            <span>🏠</span>
+            <span class="hub-btn-text">Dashboard</span>
+          </a>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <div class="notes-container" id="notebook-js-notes" data-persistent-id="nb-js-notes-persistent-id">
+          
+          <!-- Sections Container -->
+          <div id="notebook-sections">
+            <!-- SECTIONS_START -->
+
+<!-- 1. JavaScript Engine Architecture, V8 & Execution Context -->
+<article class="notes-section" id="sec-js-1-engine-execution-context">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 1: JS Engine & Memory</span>
+      <h3 class="section-heading">1. JavaScript Engine Architecture, V8 & Execution Context</h3>
+    </div>
+    <span class="section-meta-right">Runtime & Memory Heap</span>
+  </div>
+  <div class="section-body">
+
+        <div class="callout" style="border-left-color: #0284c7; background: #f0f9ff; margin-bottom: 20px; padding: 14px 18px; border-left-width: 4px; border-radius: 6px;">
+          <strong>⚡ The Heart of Modern Web Programming:</strong> JavaScript is a single-threaded, non-blocking, asynchronous, concurrent programming language featuring a Call Stack, an Event Loop, and a dynamic Memory Heap.
+        </div>
+
+        <h3>1. The V8 Engine Internal Pipeline</h3>
+        <p>Google's V8 (used in Chrome and Node.js) does not interpret JavaScript line-by-line; it uses Just-In-Time (JIT) compilation:</p>
+        <ol>
+          <li><strong>Parser:</strong> Reads JavaScript source code string and constructs an <strong>Abstract Syntax Tree (AST)</strong>.</li>
+          <li><strong>Ignition (Bytecode Interpreter):</strong> Fast interpreter that compiles AST into compact bytecode and executes immediately.</li>
+          <li><strong>TurboFan (Optimizing Compiler):</strong> Monitors hot functions running repeatedly (Type Feedback) and recompiles them into hyper-optimized machine CPU opcodes. If types mutate (polymorphism), it deoptimizes back to bytecode.</li>
+        </ol>
+
+        <h3>2. Execution Context & The Two-Phase Lifecycle</h3>
+        <p>Whenever JavaScript code executes, it runs inside an <strong>Execution Context</strong> containing: Variable Environment, Lexical Environment, and the <code>this</code> binding.</p>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Execution Phase</th><th>Engine Operations</th><th>Effect on Variables & Functions</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Phase 1: Memory Creation Phase</strong><br>(Hoisting)</td>
+              <td>Scans code for declarations. Allocates memory addresses in the Call Stack / Heap before executing a single line of code.</td>
+              <td>
+                &bull; Function declarations are fully loaded into memory.<br>
+                &bull; <code>var</code> initialized to <code>undefined</code>.<br>
+                &bull; <code>let</code> and <code>const</code> allocated in uninitialized state (<strong>Temporal Dead Zone / TDZ</strong>).
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Phase 2: Execution Phase</strong></td>
+              <td>Executes code line by line, evaluating expressions, assigning runtime values, and invoking functions.</td>
+              <td>Variables receive their assigned values; functions execute and push new stack frames onto Call Stack.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: What is the Temporal Dead Zone (TDZ) and why does let/const throw a ReferenceError while var returns undefined?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong> Both <code>var</code> and <code>let/const</code> are hoisted by the JavaScript engine during Phase 1 (Creation Phase).
+            <br>However, <code>var</code> is initialized with <code>undefined</code> at the start of its scope. Accessing it before declaration yields <code>undefined</code>.
+            <br><code>let</code> and <code>const</code> are placed in the <strong>Temporal Dead Zone (TDZ)</strong> &mdash; the temporal region between entering the scope and reaching the line where the variable is explicitly declared. Accessing a variable in the TDZ throws an immediate <code>ReferenceError: Cannot access 'x' before initialization</code>. TDZ prevents silent bugs and enforces clean coding hygiene.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 2. Primitives vs. Reference Types & Memory Allocation -->
+<article class="notes-section" id="sec-js-2-primitives-vs-references">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 1: JS Engine & Memory</span>
+      <h3 class="section-heading">2. Primitives vs. Reference Types & Memory Allocation</h3>
+    </div>
+    <span class="section-meta-right">Stack vs Heap</span>
+  </div>
+  <div class="section-body">
+
+        <p>JavaScript has 7 primitive types and 1 reference type (Object). Understanding how they are allocated in physical memory is critical to avoiding mutation side-effects.</p>
+
+        <table class="notes-table">
+          <thead>
+            <tr><th>Memory Category</th><th>Data Types</th><th>Physical Storage Location</th><th>Copying Mechanism</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primitive Types</strong></td>
+              <td><code>string</code>, <code>number</code>, <code>boolean</code>, <code>undefined</code>, <code>null</code>, <code>symbol</code>, <code>bigint</code></td>
+              <td><strong>Call Stack:</strong> Fixed-size memory cell directly inside the stack frame.</td>
+              <td><strong>Copied by Value:</strong> Creating a copy duplicates the raw value independently.</td>
+            </tr>
+            <tr>
+              <td><strong>Reference Types</strong></td>
+              <td><code>Object</code>, <code>Array</code>, <code>Function</code>, <code>Date</code>, <code>Map</code>, <code>Set</code></td>
+              <td><strong>Memory Heap:</strong> Dynamic, unstructured memory pool. The Call Stack only holds a 64-bit pointer reference address!</td>
+              <td><strong>Copied by Reference:</strong> Creating a copy copies only the pointer address, pointing to the exact same heap object!</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>1. Shallow Copy vs. Deep Copy in Production</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>clone.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>const user = {
+  name: 'Alex',
+  skills: ['JavaScript', 'SQL'],
+  address: { city: 'San Francisco' }
+};
+
+// 1. Shallow Copy (Spread Operator): Clones top-level only!
+const shallowCopy = { ...user };
+shallowCopy.name = 'Jordan';             // Safe: Does not mutate original user
+shallowCopy.skills.push('React');        // BUG! Mutates user.skills in both objects!
+
+// 2. Modern Native Deep Copy (ES2022 structuredClone):
+const deepCopy = structuredClone(user);
+deepCopy.skills.push('Node.js');         // Safe: user.skills remains untouched!</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: Why is JSON.parse(JSON.stringify(obj)) an anti-pattern for deep cloning objects?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong> While <code>JSON.parse(JSON.stringify(obj))</code> is frequently used for quick deep cloning, it has catastrophic edge cases:
+            <br>1. <strong>Drops Functions:</strong> Any object methods or functions are silently deleted.
+            <br>2. <strong>Destroys Special Objects:</strong> <code>Date</code> objects are converted to plain strings; <code>RegExp</code> objects become empty objects; <code>Map</code> and <code>Set</code> lose all keys.
+            <br>3. <strong>Circular References:</strong> Throws <code>TypeError: Converting circular structure to JSON</code>.
+            <br>4. <strong>Converts undefined and NaN:</strong> <code>undefined</code> is stripped; <code>NaN</code> and <code>Infinity</code> turn into <code>null</code>.
+            <br><em>Modern Solution:</em> Always use native <code>structuredClone(obj)</code> or Lodash <code>cloneDeep()</code>.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 3. Variables, Scoping & The Temporal Dead Zone -->
+<article class="notes-section" id="sec-js-3-variables-hoisting-tdz">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 1: JS Engine & Memory</span>
+      <h3 class="section-heading">3. Variables, Scoping & The Temporal Dead Zone</h3>
+    </div>
+    <span class="section-meta-right">var vs let vs const</span>
+  </div>
+  <div class="section-body">
+
+        <p>Variable declarations in JavaScript govern scope boundaries, mutability, and lifetime in memory. Modern ES6 strictly prefers <code>const</code> and <code>let</code> over legacy <code>var</code>.</p>
+
+        <h3>1. var vs. let vs. const Comparison Matrix</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Feature</th><th><code>var</code> (Legacy)</th><th><code>let</code> (ES6)</th><th><code>const</code> (ES6)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Scope</strong></td><td>Function Scope (ignores <code>if</code>, <code>for</code> blocks!)</td><td>Block Scope (<code>{ ... }</code>)</td><td>Block Scope (<code>{ ... }</code>)</td></tr>
+            <tr><td><strong>Hoisting State</strong></td><td>Hoisted with <code>undefined</code></td><td>Hoisted in <strong>Temporal Dead Zone</strong></td><td>Hoisted in <strong>Temporal Dead Zone</strong></td></tr>
+            <tr><td><strong>Redeclaration</strong></td><td>Allowed (silent bug hazard)</td><td>SyntaxError: Identifier already declared</td><td>SyntaxError: Identifier already declared</td></tr>
+            <tr><td><strong>Reassignment</strong></td><td>Allowed</td><td>Allowed</td><td>TypeError: Assignment to constant variable</td></tr>
+            <tr><td><strong>Global Object Leak</strong></td><td>Attaches to <code>window.x</code></td><td>Does not pollute global object</td><td>Does not pollute global object</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2. Block Scoping Demonstration</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>scoping.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>function testScope() {
+  if (true) {
+    var functionScoped = 'Available everywhere in function';
+    let blockScoped = 'Trapped inside this if block only';
+  }
+  console.log(functionScoped); // Logs string!
+  // console.log(blockScoped); // ReferenceError: blockScoped is not defined!
+}</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: Does const prevent mutation of object properties or array elements?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong> <strong>NO.</strong> <code>const</code> creates an immutable binding (variable pointer), NOT an immutable value.
+            <br>When declaring <code>const user = { name: 'Alex' };</code>, the variable <code>user</code> cannot be reassigned to point to another memory address (<code>user = {}</code> throws a TypeError).
+            <br>However, the underlying object in the heap can be freely mutated: <code>user.name = 'Jordan';</code> works without error.
+            <br>To make an object's properties truly immutable, you must use <code>Object.freeze(user);</code>.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 4. Operators, Implicit Coercion & Truthy/Falsy Truth Tables -->
+<article class="notes-section" id="sec-js-4-operators-coercion">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 2: Operators & Control Flow</span>
+      <h3 class="section-heading">4. Operators, Implicit Coercion & Truthy/Falsy Truth Tables</h3>
+    </div>
+    <span class="section-meta-right">Coercion & Equality</span>
+  </div>
+  <div class="section-body">
+
+        <p>JavaScript is dynamically and weakly typed. Operators frequently trigger implicit type conversions (coercion) according to the ECMAScript Abstract Operations specification.</p>
+
+        <h3>1. Strict Equality (===) vs. Loose Equality (==)</h3>
+        <p><code>===</code> compares both value AND data type without coercion. <code>==</code> attempts implicit type conversion first before comparing:</p>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>equality.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>// Loose Equality Traps:
+console.log(0 == false);        // true (false coerced to 0)
+console.log("" == 0);           // true ("" coerced to 0)
+console.log(null == undefined); // true (ECMAScript special rule)
+console.log([] == false);       // true ([] coerced to "" then to 0)
+console.log([] == ![]);         // true (![] is false -> [] == false -> 0 == 0)
+
+// Strict Equality (Safe & Predictable):
+console.log(0 === false);        // false
+console.log("" === 0);           // false
+console.log(null === undefined); // false</code></pre>
+        </div>
+
+        <h3>2. The 8 Falsy Values in JavaScript</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Falsy Value</th><th>Type</th><th>Boolean Conversion</th><th>Note</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>false</code></td><td>boolean</td><td><code>Boolean(false) &rarr; false</code></td><td>Native boolean false.</td></tr>
+            <tr><td><code>0</code>, <code>-0</code>, <code>0n</code></td><td>number / bigint</td><td><code>Boolean(0) &rarr; false</code></td><td>Zero value numbers.</td></tr>
+            <tr><td><code>""</code> (empty string)</td><td>string</td><td><code>Boolean("") &rarr; false</code></td><td>String with zero length.</td></tr>
+            <tr><td><code>null</code></td><td>null</td><td><code>Boolean(null) &rarr; false</code></td><td>Intentional absence of object value.</td></tr>
+            <tr><td><code>undefined</code></td><td>undefined</td><td><code>Boolean(undefined) &rarr; false</code></td><td>Uninitialized variable.</td></tr>
+            <tr><td><code>NaN</code></td><td>number</td><td><code>Boolean(NaN) &rarr; false</code></td><td>Not-a-Number arithmetic failure.</td></tr>
+          </tbody>
+        </table>
+        <p><em>Important Note:</em> Empty arrays (<code>[]</code>) and empty objects (<code>{}</code>) are <strong>TRUTHY</strong>!</p>
+
+        <h3>3. Logical OR (||) vs. Nullish Coalescing (??)</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>coalescing.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>const userSettings = { animationSpeed: 0, theme: "" };
+
+// Bug with || : Treats 0 and "" as falsy and replaces them!
+const speedBad = userSettings.animationSpeed || 300; // 300 (BUG: User wanted 0!)
+
+// Fixed with ?? : Only replaces NULL or UNDEFINED!
+const speedGood = userSettings.animationSpeed ?? 300; // 0 (Preserved correctly!)
+const themeGood = userSettings.theme ?? "dark";       // "" (Preserved correctly!)</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: Explain why 1 + "2" returns "12" while "5" - 2 returns 3.</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong>
+            <br>&bull; The <code>+</code> operator serves a dual purpose in JavaScript: numeric addition AND string concatenation. According to the ECMAScript spec, if <strong>either operand is a string</strong>, the <code>+</code> operator coerces the other operand to a string and performs string concatenation: <code>1 + "2" &rarr; "1" + "2" &rarr; "12"</code>.
+            <br>&bull; The <code>-</code> operator has NO string operation defined. It only performs numeric subtraction. Therefore, the engine coerces the string <code>"5"</code> to the number <code>5</code> via <code>ToNumber()</code>: <code>5 - 2 &rarr; 3</code>.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 5. Control Flow, Iteration & Modern Loops -->
+<article class="notes-section" id="sec-js-5-control-flow-loops">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 2: Operators & Control Flow</span>
+      <h3 class="section-heading">5. Control Flow, Iteration & Modern Loops</h3>
+    </div>
+    <span class="section-meta-right">Loops & Iteration</span>
+  </div>
+  <div class="section-body">
+
+        <p>JavaScript provides multiple looping mechanisms. Selecting the correct loop structure prevents performance bottlenecks and prototype chain traversal bugs.</p>
+
+        <h3>1. Loops Comparison Matrix</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Loop Syntax</th><th>Iterates Over</th><th>Works on Arrays?</th><th>Works on Objects?</th><th>Supports break/continue?</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>for (let i=0;...)</code></td><td>Numeric index counter</td><td>Yes (High performance)</td><td>No</td><td>Yes</td></tr>
+            <tr><td><code>for...in</code></td><td><strong>Enumerable Keys</strong> (including prototype chain!)</td><td>Anti-pattern</td><td>Yes (Plain Objects)</td><td>Yes</td></tr>
+            <tr><td><code>for...of</code> (ES6)</td><td><strong>Iterable Values</strong> (via <code>[Symbol.iterator]</code>)</td><td>Yes (Best practice)</td><td>No (Use <code>Object.entries()</code>)</td><td>Yes</td></tr>
+            <tr><td><code>array.forEach()</code></td><td>Array elements via callback</td><td>Yes</td><td>No</td><td><strong>NO</strong> (Cannot break out early!)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2. for...of vs for...in Code Demonstration</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>loops.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>const fruits = ['Apple', 'Banana', 'Cherry'];
+fruits.customProperty = 'Trap!';
+
+// for...in iterates over KEYS (Indices & custom properties) as strings:
+for (const key in fruits) {
+  console.log(key); // "0", "1", "2", "customProperty" (DANGEROUS!)
+}
+
+// for...of iterates cleanly over VALUES:
+for (const fruit of fruits) {
+  console.log(fruit); // "Apple", "Banana", "Cherry"
+  if (fruit === 'Banana') break; // Early termination supported!
+}</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: Why should you avoid using for...in to iterate over arrays?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong> <code>for...in</code> was designed specifically for inspecting object keys, NOT array items:
+            <br>1. <strong>Iterates Prototype Properties:</strong> If any third-party library or script added methods to <code>Array.prototype</code>, <code>for...in</code> will iterate over those method names as well!
+            <br>2. <strong>Keys are Strings:</strong> The indices are returned as strings (<code>"0"</code>, <code>"1"</code>), breaking numeric math (e.g. <code>index + 1 &rarr; "01"</code>).
+            <br>3. <strong>No Guarantee of Order:</strong> Modern engines do not strictly guarantee chronological index ordering for <code>for...in</code>.
+            <br><em>Best Practice:</em> Use <code>for...of</code> or standard <code>for (let i = 0; i &lt; arr.length; i++)</code> for arrays.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 6. Functions Masterclass: Declarations vs Expressions vs Arrow Functions -->
+<article class="notes-section" id="sec-js-6-functions-masterclass">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 3: Functions, Scope & Closures</span>
+      <h3 class="section-heading">6. Functions Masterclass: Declarations vs Expressions vs Arrow Functions</h3>
+    </div>
+    <span class="section-meta-right">Function Types & Execution</span>
+  </div>
+  <div class="section-body">
+
+        <p>In JavaScript, functions are first-class citizens: they can be assigned to variables, passed as arguments to other functions, and returned from functions.</p>
+
+        <h3>1. The Three Function Definitions</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Function Type</th><th>Syntax</th><th>Hoisting Behavior</th><th>Has its own 'this'?</th><th>Constructible with 'new'?</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Function Declaration</strong></td>
+              <td><code>function greet() {}</code></td>
+              <td><strong>Fully hoisted</strong> (Callable before declaration in file).</td>
+              <td>Yes (Dynamic)</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <td><strong>Function Expression</strong></td>
+              <td><code>const greet = function() {}</code></td>
+              <td>Variable hoisted in TDZ (Cannot call before definition).</td>
+              <td>Yes (Dynamic)</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <td><strong>Arrow Function</strong></td>
+              <td><code>const greet = () =&gt; {}</code></td>
+              <td>Variable hoisted in TDZ.</td>
+              <td><strong>NO (Lexical 'this')</strong></td>
+              <td><strong>NO</strong> (Throws TypeError)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2. Rest Parameters vs. Spread Operator</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>functions.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>// Rest Parameters (...args): Gathers remaining arguments into a true Array
+function calculateTotal(taxRate, ...prices) {
+  const subtotal = prices.reduce((acc, curr) => acc + curr, 0);
+  return subtotal * (1 + taxRate);
+}
+
+// Spread Operator (...arr): Expands an iterable into individual elements
+const itemPrices = [45, 90, 120];
+const total = calculateTotal(0.08, ...itemPrices);</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: What are the 4 fundamental differences between Arrow Functions and Regular Functions?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong>
+            <br>1. <strong>No <code>this</code> binding:</strong> Arrow functions do not define their own <code>this</code>; they retain the <code>this</code> of the enclosing lexical context.
+            <br>2. <strong>No <code>arguments</code> object:</strong> Arrow functions do not possess the legacy <code>arguments</code> array-like object (use rest parameters <code>...args</code> instead).
+            <br>3. <strong>Cannot be used as Constructors:</strong> Arrow functions lack a <code>[[Construct]]</code> internal method and have no <code>prototype</code> property; calling <code>new ArrowFn()</code> throws a <code>TypeError</code>.
+            <br>4. <strong>No duplicate named parameters:</strong> Arrow functions disallow duplicate parameter names even in non-strict mode.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 7. Scope Chain & Lexical Closures -->
+<article class="notes-section" id="sec-js-7-closures-lexical-scope">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 3: Functions, Scope & Closures</span>
+      <h3 class="section-heading">7. Scope Chain & Lexical Closures</h3>
+    </div>
+    <span class="section-meta-right">Closures & Data Privacy</span>
+  </div>
+  <div class="section-body">
+
+        <p>A <strong>Closure</strong> is the combination of a function bundled together with references to its surrounding lexical environment, allowing an inner function to access an outer function's scope even after the outer function has returned and exited the Call Stack.</p>
+
+        <h3>1. Data Encapsulation using Closures</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>counter-closure.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>function createSecureAccount(initialBalance) {
+  let balance = initialBalance; // Private state! Completely inaccessible from outside.
+
+  return {
+    deposit(amount) {
+      if (amount <= 0) throw new Error("Invalid deposit amount.");
+      balance += amount;
+      return balance;
+    },
+    getBalance() {
+      return balance;
+    }
+  };
+}
+
+const account = createSecureAccount(1000);
+account.deposit(500); // 1500
+console.log(account.balance); // undefined (Private state is protected!)</code></pre>
+        </div>
+
+        <h3>2. The Classic for-loop setTimeout Closure Puzzle</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>loop-closure.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>// THE BUG with var (Function scoped):
+for (var i = 0; i < 3; i++) {
+  setTimeout(() => console.log('var:', i), 100);
+}
+// Outputs: 3, 3, 3 (Shared single variable i in memory!)
+
+// THE FIX with let (Block scoped):
+for (let j = 0; j < 3; j++) {
+  setTimeout(() => console.log('let:', j), 100);
+}
+// Outputs: 0, 1, 2 (Engine creates a new lexical scope binding for each iteration!)</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: How do closures cause Memory Leaks in Single-Page Applications (SPAs) and how do you prevent them?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong> Closures keep references to variables in their parent scope alive in the heap for as long as the inner function is reachable.
+            <br><strong>Common Memory Leak Scenario:</strong> Attaching an event listener (e.g. <code>window.addEventListener('resize', () => { /* references heavy DOM node */ })</code>) creates a closure holding onto that DOM node. If the page component unmounts but the window event listener is never removed via <code>removeEventListener</code>, the garbage collector cannot reclaim the component, causing a <strong>detached DOM tree memory leak</strong>!
+            <br><em>Prevention:</em> Always clean up subscriptions, event listeners, and timers (<code>clearInterval</code>) when components unmount.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 8. The "this" Keyword & Dynamic Binding Rules -->
+<article class="notes-section" id="sec-js-8-this-keyword-binding">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 3: Functions, Scope & Closures</span>
+      <h3 class="section-heading">8. The "this" Keyword & Dynamic Binding Rules</h3>
+    </div>
+    <span class="section-meta-right">this Binding & Call/Apply/Bind</span>
+  </div>
+  <div class="section-body">
+
+        <p>In JavaScript, the <code>this</code> keyword is NOT static; its value is dynamically determined by <strong>how and where a function is called</strong> (the call-site), with the sole exception of arrow functions.</p>
+
+        <h3>1. The 4 Deterministic Rules of "this" Binding</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Binding Rule</th><th>Invocation Pattern</th><th>What 'this' Evaluates To</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Default Binding</strong></td>
+              <td>Standalone function call: <code>foo()</code></td>
+              <td><code>window</code> (browser) or <code>global</code> (Node). In strict mode (<code>'use strict'</code>), it is safely <code>undefined</code>!</td>
+            </tr>
+            <tr>
+              <td><strong>2. Implicit Binding</strong></td>
+              <td>Method invocation: <code>user.getProfile()</code></td>
+              <td>The object immediately preceding the dot (<code>user</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>3. Explicit Binding</strong></td>
+              <td><code>fn.call(obj)</code>, <code>fn.apply(obj)</code>, <code>fn.bind(obj)</code></td>
+              <td>Explicitly forces <code>this</code> to refer to the object passed as the first parameter.</td>
+            </tr>
+            <tr>
+              <td><strong>4. New Binding</strong></td>
+              <td>Constructor call: <code>new User()</code></td>
+              <td>A freshly constructed empty object in the heap.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2. Explicit Binding: call vs. apply vs. bind</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>explicit-binding.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>function introduce(city, country) {
+  return `I am ${this.name} from ${city}, ${country}.`;
+}
+
+const engineer = { name: 'Sarah' };
+
+// 1. call: Invokes immediately, arguments passed comma-separated
+introduce.call(engineer, 'London', 'UK');
+
+// 2. apply: Invokes immediately, arguments passed as an Array
+introduce.apply(engineer, ['London', 'UK']);
+
+// 3. bind: Does NOT invoke immediately! Returns a brand new function with permanently locked 'this'
+const boundIntroduce = introduce.bind(engineer, 'Tokyo');
+boundIntroduce('Japan'); // "I am Sarah from Tokyo, Japan."</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: What happens when an object method is passed as a callback (e.g., setTimeout(user.logName, 1000)), and how do you fix it?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong> This is the famous <strong>Lost Context Problem</strong>. Passing <code>user.logName</code> extracts the raw function pointer without the object reference. When <code>setTimeout</code> executes the callback later, it invokes it as a standalone function, triggering <strong>Default Binding</strong> (where <code>this</code> is <code>window</code> or <code>undefined</code>).
+            <br><strong>Two Fixes:</strong>
+            <br>1. Wrap in an Arrow Function: <code>setTimeout(() =&gt; user.logName(), 1000);</code> (retains lexical scope).
+            <br>2. Explicit Binding with <code>bind()</code>: <code>setTimeout(user.logName.bind(user), 1000);</code>
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 9. Prototypal Inheritance & The Prototype Chain -->
+<article class="notes-section" id="sec-js-9-prototypal-inheritance">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 4: Object-Oriented JS & OOP</span>
+      <h3 class="section-heading">9. Prototypal Inheritance & The Prototype Chain</h3>
+    </div>
+    <span class="section-meta-right">Prototypes & __proto__</span>
+  </div>
+  <div class="section-body">
+
+        <p>JavaScript does not have traditional classical inheritance like Java or C++. Inheritance in JavaScript is fundamentally <strong>prototypal</strong>: objects link directly to other objects via a hidden pointer link called the <strong>Prototype Chain</strong>.</p>
+
+        <h3>1. The Prototype Chain Lookup Mechanism</h3>
+        <p>When evaluating <code>user.toString()</code>, the engine performs the following step-by-step lookup:</p>
+        <ol>
+          <li>Checks if <code>toString</code> exists as an own property directly on <code>user</code>.</li>
+          <li>If not found, follows the hidden internal pointer <code>user.__proto__</code> to its prototype object.</li>
+          <li>Traverses up the chain until found or reaching <code>Object.prototype.__proto__ === null</code> (end of chain). If still not found, returns <code>undefined</code>.</li>
+        </ol>
+
+        <h3>2. prototype vs. __proto__ Architecture</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>prototypes.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>// Constructor function
+function Developer(name, specialty) {
+  this.name = name;
+  this.specialty = specialty;
+}
+
+// Attach shared methods to the prototype (Memory efficient!)
+Developer.prototype.code = function() {
+  return `${this.name} is writing ${this.specialty} code.`;
+};
+
+const dev1 = new Developer('Alex', 'JavaScript');
+const dev2 = new Developer('Maya', 'C++');
+
+// Both instances share the exact same function reference in memory!
+console.log(dev1.code === dev2.code); // true
+console.log(dev1.__proto__ === Developer.prototype); // true</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: What is the difference between prototype and __proto__?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong>
+            <br>&bull; <code>prototype</code>: A property that exists <strong>ONLY on constructor functions</strong> (and classes). It defines the blueprint object that will become the prototype of all instances instantiated with <code>new Constructor()</code>.
+            <br>&bull; <code>__proto__</code> (or <code>Object.getPrototypeOf()</code>): A property that exists on <strong>every object instance</strong>. It is the actual physical pointer pointing to that instance's prototype object.
+            <br><em>Invariant:</em> <code>const obj = new Fn(); obj.__proto__ === Fn.prototype; // true</code>
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 10. ES6+ Classes & Modern OOP Architecture -->
+<article class="notes-section" id="sec-js-10-es6-classes-oop">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 4: Object-Oriented JS & OOP</span>
+      <h3 class="section-heading">10. ES6+ Classes & Modern OOP Architecture</h3>
+    </div>
+    <span class="section-meta-right">Classes, Super & Private Fields</span>
+  </div>
+  <div class="section-body">
+
+        <p>ES6 classes provide cleaner, syntactical sugar over prototypal inheritance. Modern ES2022 introduces native private class fields (<code>#privateField</code>) for true language-level encapsulation.</p>
+
+        <h3>1. Complete Class Architecture with Inheritance & Private Fields</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>classes-oop.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>class Account {
+  #secretKey; // True private field (ES2022): Inaccessible outside class body!
+  static bankName = "Enterprise Global Bank"; // Static property
+
+  constructor(owner, initialBalance, secretKey) {
+    this.owner = owner;
+    this.balance = initialBalance;
+    this.#secretKey = secretKey;
+  }
+
+  // Getter & Setter
+  get displayBalance() {
+    return `$${this.balance.toLocaleString()}`;
+  }
+
+  // Instance Method
+  deposit(amount) {
+    this.balance += amount;
+    return this.balance;
+  }
+
+  // Static Factory Method
+  static createDefault(owner) {
+    return new Account(owner, 100, 'KEY-123');
+  }
+}
+
+// Class Inheritance
+class PremiumAccount extends Account {
+  constructor(owner, balance, secretKey, cashBackRate) {
+    super(owner, balance, secretKey); // Invokes parent constructor
+    this.cashBackRate = cashBackRate;
+  }
+
+  // Method Overriding (Polymorphism)
+  deposit(amount) {
+    const bonus = amount * this.cashBackRate;
+    return super.deposit(amount + bonus);
+  }
+}</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: Are ES6 classes purely syntactic sugar over prototypal inheritance, or are there real technical differences?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong> While classes compile to prototypal inheritance under the hood, they enforce several distinct technical behaviors:
+            <br>1. <strong>Mandatory <code>new</code>:</strong> Invoking a class without <code>new</code> (<code>Account()</code>) throws an immediate <code>TypeError</code>. (Constructor functions silently run as default function calls).
+            <br>2. <strong>Strict Mode Enforced:</strong> All code inside a class body runs automatically in <code>'use strict'</code> mode.
+            <br>3. <strong>Non-Enumerable Methods:</strong> All methods declared inside a class body are automatically configured with <code>enumerable: false</code> on the prototype.
+            <br>4. <strong>TDZ:</strong> Classes are not hoisted into initialized memory; they live in the Temporal Dead Zone until declared.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 11. Array Methods & Functional Programming -->
+<article class="notes-section" id="sec-js-11-arrays-functional-methods">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 4: Object-Oriented JS & OOP</span>
+      <h3 class="section-heading">11. Array Methods & Functional Programming</h3>
+    </div>
+    <span class="section-meta-right">Functional Map, Filter, Reduce</span>
+  </div>
+  <div class="section-body">
+
+        <p>Functional programming emphasizes pure functions, immutability, and declarative iteration over imperative loops. Modern JavaScript provides rich built-in array processing pipelines.</p>
+
+        <h3>1. Mutating vs. Non-Mutating Array Methods</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Category</th><th>Methods</th><th>Effect on Original Array</th><th>Best Practice in React/State</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mutating Methods</strong><br>(Impure)</td>
+              <td><code>push()</code>, <code>pop()</code>, <code>shift()</code>, <code>unshift()</code>, <code>splice()</code>, <code>sort()</code>, <code>reverse()</code></td>
+              <td><strong>Modifies original array in place!</strong></td>
+              <td><strong>Danger:</strong> Breaks React re-renders by mutating state references directly.</td>
+            </tr>
+            <tr>
+              <td><strong>Non-Mutating Methods</strong><br>(Pure)</td>
+              <td><code>map()</code>, <code>filter()</code>, <code>reduce()</code>, <code>concat()</code>, <code>slice()</code>, <code>toSorted()</code>, <code>toReversed()</code></td>
+              <td><strong>Returns a brand new array</strong>; leaves original array untouched.</td>
+              <td><strong>Standard:</strong> Pure immutability required for predictable state management.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2. Advanced reduce() Pipeline Patterns</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>functional-arrays.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>const transactions = [
+  { id: 1, type: 'credit', amount: 500, category: 'Engineering' },
+  { id: 2, type: 'debit',  amount: 120, category: 'Supplies' },
+  { id: 3, type: 'credit', amount: 800, category: 'Engineering' }
+];
+
+// 1. Grouping objects by category using reduce:
+const grouped = transactions.reduce((acc, tx) => {
+  acc[tx.category] = acc[tx.category] || [];
+  acc[tx.category].push(tx);
+  return acc;
+}, {});
+
+// 2. Chained Immutable Pipeline: Total credits for Engineering
+const totalCredits = transactions
+  .filter(tx => tx.type === 'credit' && tx.category === 'Engineering')
+  .map(tx => tx.amount)
+  .reduce((sum, amount) => sum + amount, 0); // 1300</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: Implement a polyfill for Array.prototype.reduce from scratch.</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong>
+            <br><code>Array.prototype.myReduce = function(callback, initialValue) {<br>
+  let accumulator = initialValue !== undefined ? initialValue : this[0];<br>
+  let startIndex = initialValue !== undefined ? 0 : 1;<br>
+  for (let i = startIndex; i &lt; this.length; i++) {<br>
+    if (i in this) {<br>
+      accumulator = callback(accumulator, this[i], i, this);<br>
+    }<br>
+  }<br>
+  return accumulator;<br>
+};</code>
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 12. The Event Loop Deep-Dive: Call Stack, Microtasks & Macrotasks -->
+<article class="notes-section" id="sec-js-12-event-loop-microtasks">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 5: Asynchronous JS & The Event Loop</span>
+      <h3 class="section-heading">12. The Event Loop Deep-Dive: Call Stack, Microtasks & Macrotasks</h3>
+    </div>
+    <span class="section-meta-right">Concurrency & Event Loop</span>
+  </div>
+  <div class="section-body">
+
+        <p>JavaScript is single-threaded, meaning it has only one Call Stack and can execute only one statement at a time. Concurrency and non-blocking I/O are powered by the <strong>Event Loop</strong> coordinating between Web APIs, the Microtask Queue, and the Macrotask Queue.</p>
+
+        <h3>1. The Three Tiers of Execution Priority</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Priority Tier</th><th>Queue Name</th><th>Asynchronous Task Types</th><th>Execution Rules</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Priority 1</strong></td>
+              <td><strong>Call Stack</strong></td>
+              <td>Synchronous JavaScript code (loops, calculations, console.log).</td>
+              <td>Runs to absolute completion before any queued callbacks can execute.</td>
+            </tr>
+            <tr>
+              <td><strong>Priority 2</strong></td>
+              <td><strong>Microtask Queue</strong></td>
+              <td><code>Promise.then/catch/finally</code>, <code>async/await</code> continuations, <code>queueMicrotask()</code>.</td>
+              <td><strong>Drained to EMPTY</strong> after every single Call Stack frame completion, before rendering or macrotasks!</td>
+            </tr>
+            <tr>
+              <td><strong>Priority 3</strong></td>
+              <td><strong>Macrotask Queue</strong></td>
+              <td><code>setTimeout</code>, <code>setInterval</code>, DOM event callbacks, I/O.</td>
+              <td>Event loop picks exactly ONE macrotask, executes it, then immediately checks and clears the Microtask Queue again!</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2. Classic Event Loop Interview Puzzle</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>event-loop-test.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>console.log('1'); // Synchronous
+
+setTimeout(() => {
+  console.log('2'); // Macrotask
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log('3'); // Microtask
+});
+
+console.log('4'); // Synchronous
+
+// Execution Order Output:
+// 1
+// 4
+// 3
+// 2</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: What happens if an infinite loop of microtasks is created via queueMicrotask() or recursive Promise.resolve()?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong> It completely <strong>starves the browser event loop</strong>.
+            <br>Because the Event Loop specification requires the engine to completely drain the Microtask Queue before yielding control to the browser rendering pipeline or picking the next macrotask:
+            <br>A recursive microtask generator prevents the browser from ever repainting pixels on screen, processing user clicks, or executing <code>setTimeout</code> callbacks. The entire web page completely freezes and stops responding.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 13. Asynchronous JS: Callbacks, Promises Lifecycle & async/await -->
+<article class="notes-section" id="sec-js-13-promises-async-await">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 5: Asynchronous JS & The Event Loop</span>
+      <h3 class="section-heading">13. Asynchronous JS: Callbacks, Promises Lifecycle & async/await</h3>
+    </div>
+    <span class="section-meta-right">Promises & async/await</span>
+  </div>
+  <div class="section-body">
+
+        <p>Asynchronous operations (network requests, timers, file access) in JavaScript evolved from Callback Hell to Promises (ES6) and finally to <code>async/await</code> (ES2017).</p>
+
+        <h3>1. The 3 States of a Promise</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Promise State</th><th>Meaning</th><th>Transition Rules</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Pending</code></td><td>Initial state; asynchronous operation in progress.</td><td>Can transition to Fulfilled or Rejected.</td></tr>
+            <tr><td><code>Fulfilled</code></td><td>Operation completed successfully with a resolved value.</td><td><strong>Immutable:</strong> Value cannot change; cannot reject later.</td></tr>
+            <tr><td><code>Rejected</code></td><td>Operation failed with an error reason or exception.</td><td><strong>Immutable:</strong> Error cannot change; caught by <code>.catch()</code>.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2. Promise Combinators Comparison</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Combinator</th><th>Settlement Behavior</th><th>When does it Reject?</th><th>Best Use Case</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Promise.all([p1, p2])</code></td><td>Waits for ALL to fulfill.</td><td><strong>Fails fast:</strong> Rejects immediately if ANY promise rejects!</td><td>Batch dependent operations where all must succeed.</td></tr>
+            <tr><td><code>Promise.allSettled([p1, p2])</code></td><td>Waits for ALL to settle (either fulfill or reject).</td><td><strong>NEVER rejects.</strong> Returns status array.</td><td>Batch independent tasks (e.g., sending analytics pings).</td></tr>
+            <tr><td><code>Promise.race([p1, p2])</code></td><td>Settles as soon as the FIRST promise settles.</td><td>Rejects if the first settled promise rejected.</td><td>Implementing network request timeouts.</td></tr>
+            <tr><td><code>Promise.any([p1, p2])</code></td><td>Resolves as soon as the FIRST promise <em>fulfills</em>.</td><td>Rejects only if ALL promises reject (AggregateError).</td><td>Querying redundant mirror servers.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>3. Clean Production async/await with Error Handling</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>fetch-data.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>async function fetchUserProfile(userId) {
+  try {
+    const response = await fetch(`https://api.example.com/users/${userId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to retrieve user profile:', error.message);
+    throw error; // Re-throw or return fallback state
+  }
+}</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: How do you implement a network request timeout using Promise.race()?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong>
+            <br><code>function timeoutPromise(promise, ms) {<br>
+  const timeout = new Promise((_, reject) => {<br>
+    setTimeout(() => reject(new Error('Operation timed out')), ms);<br>
+  });<br>
+  return Promise.race([promise, timeout]);<br>
+}</code>
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 14. High-Performance DOM Manipulation & Event Delegation -->
+<article class="notes-section" id="sec-js-14-dom-event-delegation">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 6: DOM, Web APIs & Performance</span>
+      <h3 class="section-heading">14. High-Performance DOM Manipulation & Event Delegation</h3>
+    </div>
+    <span class="section-meta-right">DOM Tree & Event Delegation</span>
+  </div>
+  <div class="section-body">
+
+        <p>The Document Object Model (DOM) is an object-oriented tree representation of the HTML document. Direct DOM manipulations are among the most expensive operations in web applications.</p>
+
+        <h3>1. The 3 Phases of Event Propagation</h3>
+        <p>When an event occurs on a DOM element (e.g. clicking a button), it travels through three distinct phases:</p>
+        <ol>
+          <li><strong>Capturing Phase:</strong> The event travels downward from <code>window</code> &rarr; <code>document</code> &rarr; <code>&lt;html&gt;</code> &rarr; <code>&lt;body&gt;</code> &rarr; down to the target parent.</li>
+          <li><strong>Target Phase:</strong> The event reaches the actual target element that triggered the action.</li>
+          <li><strong>Bubbling Phase:</strong> The event bubbles back upward through every ancestor up to <code>window</code>.</li>
+        </ol>
+
+        <h3>2. Event Delegation Architecture</h3>
+        <p>Instead of attaching 10,000 separate event listeners to every row in a table or list, attach <strong>one single listener</strong> to the parent container and leverage event bubbling:</p>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>event-delegation.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>// 1 Listener handles millions of dynamic rows!
+const table = document.getElementById('users-table');
+
+table.addEventListener('click', (event) => {
+  // Find nearest matching button trigger
+  const deleteBtn = event.target.closest('.delete-row-btn');
+  if (!deleteBtn) return; // Click occurred elsewhere
+
+  const row = deleteBtn.closest('tr');
+  const userId = row.dataset.userId;
+  console.log('Deleting user ID:', userId);
+  row.remove();
+});</code></pre>
+        </div>
+
+        <h3>3. Batch DOM Updates with DocumentFragment</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>fragment.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>// Appending elements individually causes 1,000 separate browser reflows!
+// Using DocumentFragment causes exactly ONE reflow:
+const fragment = document.createDocumentFragment();
+
+for (let i = 0; i < 1000; i++) {
+  const li = document.createElement('li');
+  li.textContent = `Item #${i}`;
+  fragment.appendChild(li); // Purely in memory
+}
+
+document.getElementById('list').appendChild(fragment); // 1 single Reflow!</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: What is the difference between event.target and event.currentTarget?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong>
+            <br>&bull; <code>event.target</code>: The <strong>exact physical element</strong> that received the user interaction (e.g. the inner <code>&lt;svg&gt;</code> or <code>&lt;span&gt;</code> inside a button).
+            <br>&bull; <code>event.currentTarget</code>: The element to which the <strong>event listener was explicitly attached</strong> (e.g. the parent <code>&lt;ul&gt;</code> or <code>&lt;button&gt;</code>). Inside an event handler function, <code>this === event.currentTarget</code>.
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+
+<!-- 15. Networking, Web APIs & Optimization Patterns -->
+<article class="notes-section" id="sec-js-15-web-apis-performance">
+  <div class="section-header">
+    <div class="section-title-wrap">
+      <span class="chapter-tag" style="background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Unit 6: DOM, Web APIs & Performance</span>
+      <h3 class="section-heading">15. Networking, Web APIs & Optimization Patterns</h3>
+    </div>
+    <span class="section-meta-right">Debounce, Throttle & Observers</span>
+  </div>
+  <div class="section-body">
+
+        <p>High-performance web applications optimize high-frequency events (typing, scrolling, window resizing) using rate-limiting design patterns and asynchronous browser observer APIs.</p>
+
+        <h3>1. Debouncing vs. Throttling</h3>
+        <table class="notes-table">
+          <thead>
+            <tr><th>Technique</th><th>Core Mechanism</th><th>Ideal Production Use Case</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Debounce</strong></td>
+              <td>Delays execution until a specified quiet period has elapsed with <strong>no new events fired</strong>. Each new event resets the timer.</td>
+              <td>Search bar autocomplete input, auto-saving drafts, window resize layout recalculations.</td>
+            </tr>
+            <tr>
+              <td><strong>Throttle</strong></td>
+              <td>Guarantees execution at a regular fixed maximum frequency (e.g. at most once every $100\text{ms}$).</td>
+              <td>Scroll position tracking, infinite scroll triggering, game loop input listeners.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2. Hand-Crafted Debounce & Throttle Polyfills</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>rate-limiters.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>// 1. Debounce Implementation
+function debounce(fn, delay) {
+  let timerId;
+  return function(...args) {
+    clearTimeout(timerId);
+    timerId = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+// 2. Throttle Implementation
+function throttle(fn, limit) {
+  let inThrottle = false;
+  return function(...args) {
+    if (!inThrottle) {
+      fn.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}</code></pre>
+        </div>
+
+        <h3>3. High-Performance IntersectionObserver for Lazy Loading</h3>
+        <div class="code-block-container">
+          <div class="code-block-header"><span>observer.js</span><button class="copy-btn" onclick="copyCode(this)">Copy Code</button></div>
+          <pre><code>// Replaces laggy window.onscroll listeners with native GPU-calculated intersection checks:
+const imageObserver = new IntersectionObserver((entries, observer) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const img = entry.target;
+      img.src = img.dataset.src; // Swap data-src to real src
+      observer.unobserve(img);   // Disconnect observer for this image
+    }
+  });
+}, { rootMargin: '100px' }); // Preload 100px before appearing in viewport!
+
+document.querySelectorAll('img[data-src]').forEach(img => imageObserver.observe(img));</code></pre>
+        </div>
+
+        <h3>🎯 Top Frontend Interview Questions</h3>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+          <h4 style="color: #0f172a; margin-top: 0;">Q: How does AbortController cancel pending fetch HTTP requests when a user rapidly types in a search bar?</h4>
+          <p style="font-size: 0.9rem; color: #334155; margin-bottom: 0; line-height: 1.65;">
+            <strong>Answer:</strong> When a user types rapidly, previous network requests are obsolete and cause race conditions if an older request returns <em>after</em> a newer one.
+            <br>Using <code>AbortController</code>:
+            <br><code>let currentController = null;<br>
+function search(query) {<br>
+  if (currentController) currentController.abort(); // Cancel previous ongoing request!<br>
+  currentController = new AbortController();<br>
+  fetch(`/api/search?q=${query}`, { signal: currentController.signal })<br>
+    .then(r =&gt; r.json())<br>
+    .then(data =&gt; updateUI(data))<br>
+    .catch(err =&gt; { if (err.name !== 'AbortError') console.error(err); });<br>
+}</code>
+          </p>
+        </div>
+      
+  </div>
+</article>
+
+            <!-- SECTIONS_END -->
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Copy code block helper
+    function copyCode(btn) {
+      const container = btn.closest('.code-block-container');
+      const code = container ? container.querySelector('code').innerText : '';
+      if (code) {
+        navigator.clipboard.writeText(code).then(() => {
+          const orig = btn.innerText;
+          btn.innerText = 'Copied!';
+          btn.style.background = '#e0f2fe';
+          btn.style.color = '#0284c7';
+          setTimeout(() => {
+            btn.innerText = orig;
+            btn.style.background = '';
+            btn.style.color = '';
+          }, 2000);
+        });
+      }
+    }
+  </script>
+  <script src="public/js/outlines-data.js"></script>
+  <script src="public/js/search.js"></script>
+  <script src="public/js/sidebar.js"></script>
+  <script src="public/js/app.js"></script>
+</body>
+</html>

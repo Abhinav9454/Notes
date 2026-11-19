@@ -1,0 +1,8 @@
+/* ==========================================================================
+   Smart Notes - Unified Main Stylesheet
+   ========================================================================== */
+
+@import './variables.css';
+@import './sidebar.css';
+@import './components.css';
+@import './responsive.css';
